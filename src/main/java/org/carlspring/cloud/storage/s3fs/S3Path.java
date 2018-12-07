@@ -42,12 +42,12 @@ public class S3Path
      * URI not encoded
      * Is the key for S3Client
      */
-    private String uri;
+    private final String uri;
 
     /**
      * actual filesystem
      */
-    private S3FileSystem fileSystem;
+    private final S3FileSystem fileSystem;
 
     /**
      * S3BasicFileAttributes cache
@@ -109,18 +109,16 @@ public class S3Path
                 uriBuilder.append(path + PATH_SEPARATOR);
             }
         }
-
-        this.uri = normalizeURI(uriBuilder.toString());
+        String localUri = normalizeURI(uriBuilder.toString());
         // remove last PATH_SEPARATOR
         if (!first.isEmpty() &&
-            // only first param and not ended with PATH_SEPARATOR
-            ((!first.endsWith(PATH_SEPARATOR) && (more == null || more.length == 0))
-            // we have more param and not ended with PATH_SEPARATOR
-            || more != null && more.length > 0 && !more[more.length - 1].endsWith(PATH_SEPARATOR)))
-        {
-            this.uri = this.uri.substring(0, this.uri.length() - 1);
+                // only first param and not ended with PATH_SEPARATOR
+                ((!first.endsWith(PATH_SEPARATOR) && (more == null || more.length == 0))
+                // we have more param and not ended with PATH_SEPARATOR
+                || more != null &&  more.length > 0 && !more[more.length-1].endsWith(PATH_SEPARATOR))) {
+            localUri = localUri.substring(0, localUri.length() - 1);
         }
-
+        this.uri = localUri;
         this.fileSystem = fileSystem;
     }
 
