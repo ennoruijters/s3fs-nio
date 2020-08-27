@@ -83,6 +83,16 @@ class ToUriTest
     }
 
     @Test
+    public void toUriWithLotsOfSpecialCharacters()
+    {
+        String key = "/bucket/with spaces&$@=;:+,?{^}`]'\">[<#|";
+        S3Path s3Path = getPath(key);
+        assertEquals(S3_GLOBAL_URI_TEST.resolve("bucket/with%20spaces%26%24%40%3D%3B%3A%2B%2C%3F%7B%5E%7D%60%5D%27%22%3E%5B%3C%23%7C"),
+                     s3Path.toUri());
+        assertEquals(S3_GLOBAL_URI_TEST + key.substring(1), s3Path.toString());
+    }
+
+    @Test
     void toUriRelative()
     {
         S3FileSystem fileSystem = s3fsProvider.getFileSystem(S3_GLOBAL_URI_TEST);
