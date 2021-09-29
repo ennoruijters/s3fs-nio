@@ -102,6 +102,31 @@ class S3PathTest
     }
 
     @Test
+    public void normalize()
+    {
+        assertEquals(forPath("/bucket"), forPath("/bucket").normalize());
+        assertEquals(forPath("/bucket/"), forPath("/bucket/").normalize());
+        assertEquals(forPath("/bucket/"), forPath("/bucket/.").normalize());
+
+        // We can't normalize to outside of the bucket
+        assertEquals(forPath("/bucket/"), forPath("/bucket/..").normalize());
+        assertEquals(forPath("/bucket/path"), forPath("/bucket/../path").normalize());
+
+        // Various different spellings of the same path
+        assertEquals(forPath("/bucket/path/to"), forPath("/bucket/path/to").normalize());
+        assertEquals(forPath("/bucket/path/to/"), forPath("/bucket/path/to/").normalize());
+        assertEquals(forPath("/bucket/path/to/"), forPath("/bucket/path/to/file/../").normalize());
+        assertEquals(forPath("/bucket/path/to/"), forPath("/bucket/path/to/./").normalize());
+        assertEquals(forPath("/bucket/path/to/"), forPath("/bucket/./path/to/").normalize());
+        assertEquals(forPath("/bucket/path/to/"), forPath("/bucket/foo/./../bar/../path/to/").normalize());
+        assertEquals(forPath("/bucket/path/to/"), forPath("/bucket/path/to/foo/bar/../../").normalize());
+        assertEquals(forPath("/bucket/path/to/"), forPath("/bucket/././././././foo/./././../././bar/./././../path/./to/././").normalize());
+
+        S3Path path = forPath("../bucket/path/to");
+        assertTrue(path == path.normalize());
+    }
+
+    @Test
     void nameCount()
     {
         assertEquals(forPath("/bucket/path/to/file").getNameCount(), 3);
