@@ -90,7 +90,7 @@ class ResolveTest
         assertEquals("s3://s3.test.amazonaws.com/bucket/./rabbit", resolved.toString());
 
         resolved = (S3Path) parent.resolve(Paths.get("./rabbit in space")); //unixPath
-        assertEquals("s3://s3.test.amazonaws.com/bucket/./rabbit%20in%20space", resolved.toString());
+        assertEquals("s3://s3.test.amazonaws.com/bucket/./rabbit in space", resolved.toString());
 
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
                 parent.resolve(Paths.get("tempDirectory").toAbsolutePath()));
