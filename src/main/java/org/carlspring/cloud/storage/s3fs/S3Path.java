@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
@@ -783,7 +784,7 @@ public class S3Path
     @Override
     public String toString()
     {
-        return toUri().toString();
+        return decode(toUri());
     }
 
     @Override
@@ -818,18 +819,69 @@ public class S3Path
     }
 
     /**
+     * Amazon states, on
+     * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html, the
+     * following about special characters:
+     * 
+     * Characters that might require special handling
+     * The following characters in a key name might require additional code
+     * handling and likely need to be URL encoded or referenced as HEX. Some of
+     * these are non-printable characters that your browser might not handle,
+     * which also requires special handling:
+     * Ampersand ("&")
+     * Dollar ("$")
+     * ASCII character ranges 00–1F hex (0–31 decimal) and 7F (127 decimal)
+     * 'At' symbol ("@")
+     * Equals ("=")
+     * Semicolon (";")
+     * Colon (":")
+     * Plus ("+")
+     * Space – Significant sequences of spaces might be lost in some uses
+     * (especially multiple spaces)
+     * Comma (",")
+     * Question mark ("?")
+     * 
+     * Characters to avoid
+     * Avoid the following characters in a key name because of significant
+     * special handling for consistency across all applications.
+     * Backslash ("\")
+     * Left curly brace ("{")
+     * Non-printable ASCII characters (128–255 decimal characters)
+     * Caret ("^")
+     * Right curly brace ("}")
+     * Percent character ("%")
+     * Grave accent / back tick ("`")
+     * Right square bracket ("]")
+     * Quotation marks
+     * 'Greater Than' symbol (">")
+     * Left square bracket ("[")
+     * Tilde ("~")
+     * 'Less Than' symbol ("<")
+     * 'Pound' character ("#")
+     * Vertical bar / pipe ("|")
+     * 
      * Encode special URI characters for path.
-     *
-     * @param uri String the uri path
+     * 
+     * @param uriString
+     *            String the uri path
      * @return String
      */
-    private String encode(String uri)
+    private String encode(String uriString)
     {
         // remove special case URI starting with //
-        uri = uri.replace("//", "/");
-        uri = uri.replaceAll(" ", "%20");
-
-        return uri;
+        uriString = uriString.replace("//", "/");
+        try
+        {
+            uriString = URLEncoder.encode(uriString, "UTF-8");
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException(e);
+        }
+        uriString = uriString.replaceAll("\\+", "%20"); // use %20 to encode
+                                                        // spaces instead of +
+        uriString = uriString.replaceAll("%2F", "/"); // don't encode slashes
+        return uriString;
     }
 
     /**
